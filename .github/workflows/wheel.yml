@@ -51,12 +51,8 @@ jobs:
       - name: Copy to python package
         run: |
           cd Manylinux2014_Compliant_Source/pkg
-          cp -r ../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/lib/* ./
-          cp -r ../../build/lib/* ./
           cd IR2Vec_pkg
           cp -r ../../../src/include/ IR2Vec_include
-          cp -r ../../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/include/llvm ./
-          cp -r ../../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/include/llvm-c ./
           cp -r ../../../vocabulary/* ./
 
       - name: Build wheels
