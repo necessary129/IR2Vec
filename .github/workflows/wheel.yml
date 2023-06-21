@@ -1,0 +1,72 @@
+name: Build wheels
+
+# Build on every branch push, tag push, and pull request change:
+on: [push, pull_request, workflow_dispatch]
+
+# Alternatively, to publish when a (published) GitHub Release is created, use the following:
+# on:
+#   push:
+#   pull_request:
+#   release:
+#     types:
+#       - published
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Eigen-setup
+        run: |
+          mkdir build && cd build
+          wget https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz
+          tar -xvzf eigen-3.3.7.tar.gz
+
+      - name: Build-Eigen
+        run: |
+          cd build
+          mkdir eigen-build
+          cd eigen-build
+          cmake ../eigen-3.3.7
+          make -j$(nproc) && cd ..
+
+      - name: Install LLVM-12.0.0
+        run: |
+          cd build
+          wget https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz
+          tar -xvf clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz
+
+
+      - name: cmake
+        run: cd build && cmake -DEigen3_DIR=./eigen-build -DLT_LLVM_INSTALL_DIR=./clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04 ../src
+      - name: make
+        run: cd build && make -j$(nproc) 
+
+      - name: Copy to python package
+        run: |
+          cd Manylinux2014_Compliant_Source/pkg
+          cp -r ../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/lib/* ./
+          cp -r ../../build/lib/* ./
+          cd IR2Vec_pkg
+          cp -r ../../../src/include/ IR2Vec_include
+          cp -r ../../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/include/llvm ./
+          cp -r ../../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/include/llvm-c ./
+          cp -r ../../../vocabulary/* ./
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.13.1
+        with:
+          package-dir: Manylinux2014_Compliant_Source/pkg
+        env:
+          CIBW_SKIP: "pp*"
+          CIBW_ARCHS: "x86_64"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
