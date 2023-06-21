@@ -10,12 +10,12 @@ IR2Vec_core = Extension(
     include_dirs=[
         "./IR2Vec_pkg",
         "./IR2Vec_pkg/IR2Vec_include",
-        "../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/include"
+        # "../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/include"
     ],
-    library_dirs = [
-        "../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/lib",
-        "../../build/lib"
-    ],
+    # library_dirs = [
+        # "../../build/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-20.04/lib",
+        # "../../build/lib"
+    # ],
       # list of directories to search for C/C++ header files (in Unix form for portability)
     libraries=[
         'LLVMWindowsManifest',
